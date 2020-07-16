@@ -8,10 +8,12 @@ RSpec.describe EvpBytesToKey do
 
     it 'validates the salt argument' do
       expect { EvpBytesToKey::Key.new('password', 'foo') }.to raise_error(EvpBytesToKey::ArgumentError).with_message(/salt/)
+      expect { EvpBytesToKey::Key.new('password', '12345678') }.to raise_error(EvpBytesToKey::ArgumentError).with_message(/bits/)
     end
 
     it 'validates the bits argument' do
       expect { EvpBytesToKey::Key.new('password', nil, 5) }.to raise_error(EvpBytesToKey::ArgumentError).with_message(/bits/)
+      expect { EvpBytesToKey::Key.new('password', nil, 128) }.to raise_error(EvpBytesToKey::ArgumentError).with_message(/iv_length/)
     end
 
     it 'validates the iv_length argument' do
