@@ -30,4 +30,6 @@ Gem::Specification.new do |spec|
 
   spec.add_development_dependency 'rspec', '~> 3.9.0'
   spec.add_development_dependency 'rubocop', '~> 0.88.0'
+  spec.add_development_dependency 'pry', '~> 0.13.1'
+  spec.add_development_dependency 'yard', '~> 0.9.25'
 end
