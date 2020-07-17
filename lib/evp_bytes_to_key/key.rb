@@ -8,7 +8,7 @@ module EvpBytesToKey
   class Key
     # @return [String] the key or iv value in the named format
     attr_accessor :key, :key_hex, :iv, :iv_hex
-    private :key=, :key_hex=, :iv=, :iv_hex
+    private :key=, :key_hex=, :iv=, :iv_hex=
 
     # Generate a key from a given password. This key is identical to the key generated
     # by EVP_KeyToBytes() in the openssl command-line utility.

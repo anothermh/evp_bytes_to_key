@@ -21,44 +21,38 @@ RSpec.describe EvpBytesToKey do
     end
 
     context 'with valid arguments' do
-      context 'with a 128 bit key' do
-        let(:key) { EvpBytesToKey::Key.new('password', nil, 128, 0) }
+      let(:key_length) { 256 }
+      let(:iv_length) { 16 }
+      let(:key) { EvpBytesToKey::Key.new('password', 'saltsalt', key_length, iv_length) }
+      let(:valid_key) { 'fdbdf3419fff98bdb0241390f62a9db35f4aba29d77566377997314ebfc709f2' }
+      let(:valid_iv) { '0b5ca7b1081f94b1ac12e3c8ba87d05a' }
 
-        it 'generates a key from a password' do
-          expect(key).to be_kind_of(EvpBytesToKey::Key)
-        end
-
-        it 'generates a valid hexadecimal value' do
-          expect(key.hex).to be_kind_of(String)
-          expect(key.hex.bytesize).to eq(32)
-          expect(key.hex).to eq('5f4dcc3b5aa765d61d8327deb882cf99')
-        end
-
-        it 'generates a valid string of bytes' do
-          expect(key.bytes).to be_kind_of(String)
-          expect(key.bytes.bytesize).to eq(16)
-          expect(key.bytes.bytes).to eq([95, 77, 204, 59, 90, 167, 101, 214, 29, 131, 39, 222, 184, 130, 207, 153])
-        end
+      it 'generates a key from a password' do
+        expect(key).to be_kind_of(EvpBytesToKey::Key)
       end
 
-      context 'with a 256 bit key' do
-        let(:key) { EvpBytesToKey::Key.new('password', nil, 256, 0) }
+      it 'generates a valid byte string key value' do
+        expect(key.key).to be_kind_of(String)
+        expect(key.key.bytesize).to eq(key_length / 8)
+        expect(key.key.unpack('H*').first).to eq(valid_key)
+      end
 
-        it 'generates a key from a password' do
-          expect(key).to be_kind_of(EvpBytesToKey::Key)
-        end
+      it 'generates a valid hexadecimal key value' do
+        expect(key.key_hex).to be_kind_of(String)
+        expect(key.key_hex.bytesize).to eq(key_length / 8 * 2)
+        expect(key.key_hex).to eq(valid_key)
+      end
 
-        it 'generates a valid hexadecimal value' do
-          expect(key.hex).to be_kind_of(String)
-          expect(key.hex.bytesize).to eq(64)
-          expect(key.hex).to eq('5f4dcc3b5aa765d61d8327deb882cf992b95990a9151374abd8ff8c5a7a0fe08')
-        end
+      it 'generates a valid byte string iv value' do
+        expect(key.iv).to be_kind_of(String)
+        expect(key.iv.bytesize).to eq(iv_length)
+        expect(key.iv.unpack('H*').first).to eq(valid_iv)
+      end
 
-        it 'generates a valid string of bytes' do
-          expect(key.bytes).to be_kind_of(String)
-          expect(key.bytes.bytesize).to eq(32)
-          expect(key.bytes.bytes).to eq([95, 77, 204, 59, 90, 167, 101, 214, 29, 131, 39, 222, 184, 130, 207, 153, 43, 149, 153, 10, 145, 81, 55, 74, 189, 143, 248, 197, 167, 160, 254, 8])
-        end
+      it 'generates a valid hexadecimal iv value' do
+        expect(key.iv_hex).to be_kind_of(String)
+        expect(key.iv_hex.bytesize).to eq(iv_length * 2)
+        expect(key.iv_hex).to eq(valid_iv)
       end
     end
   end
