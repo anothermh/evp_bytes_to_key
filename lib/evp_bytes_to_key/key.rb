@@ -1,3 +1,5 @@
+# frozen_string_literal: true
+
 require 'digest/md5'
 
 module EvpBytesToKey
@@ -19,45 +21,63 @@ module EvpBytesToKey
     # @param iv_length [Integer] the byte length of the IV
     #
     # @return [EvpBytesToKey::Key]
-    def initialize(password=nil, salt=nil, bits=nil, iv_length=nil)
-      validate_arguments!({ :password => password, :salt => salt, :bits => bits, :iv_length => iv_length })
-
-      @password = password
-      @salt = salt
-      @bits = bits
-      @iv_length = iv_length
+    def initialize(password = nil, salt = nil, bits = nil, iv_length = nil)
+      @password = validate_password(password)
+      @salt = validate_salt(salt)
+      @bits = validate_bits(bits)
+      @iv_length = validate_iv_length(iv_length)
 
       generate_key!
     end
 
     private
 
-    # Validates all the arguments passed to initialize
-    #
-    # @param args [Hash] The arguments passed to initialize
+    # @param password [String] the password that should be used for key derivation
     # @raise [EvpBytesToKey::ArgumentError]
-    def validate_arguments!(args)
-      raise EvpBytesToKey::ArgumentError.new('password must be a String') unless args[:password].is_a?(String)
+    # @return [String]
+    def validate_password(password)
+      raise EvpBytesToKey::ArgumentError, 'password must be a String' unless password.is_a?(String)
 
-      if args[:salt]
-        unless args[:salt].is_a?(String) && args[:salt].bytesize == 8
-          raise EvpBytesToKey::ArgumentError.new('salt must be an 8 byte String')
-        end
+      password
+    end
+
+    # @param salt [String] the salt to append to the password that should be used for key derivation
+    # @raise [EvpBytesToKey::ArgumentError]
+    # @return [String, nil]
+    def validate_salt(salt)
+      if salt
+        raise EvpBytesToKey::ArgumentError, 'salt must be an 8 byte String' unless salt.is_a?(String) && salt.bytesize == 8
       end
 
-      unless args[:bits].is_a?(Integer) && args[:bits] >= 0 && args[:bits] % 8 == 0
-        raise EvpBytesToKey::ArgumentError.new('bits must be a non-negative Integer evenly divisible by 8')
+      salt
+    end
+
+    # @param bits [Integer] the size of the key that should be returned in bits
+    # @raise [EvpBytesToKey::ArgumentError]
+    # @return [Integer]
+    def validate_bits(bits)
+      unless bits.is_a?(Integer) && bits >= 0 && (bits % 8).zero?
+        raise EvpBytesToKey::ArgumentError, 'bits must be a non-negative Integer evenly divisible by 8'
       end
 
-      unless args[:iv_length].is_a?(Integer) && args[:iv_length] >= 0 && args[:iv_length] % 2 == 0
-        raise EvpBytesToKey::ArgumentError.new('iv_length must be an even Integer >= 0')
+      bits
+    end
+
+    # @param iv_length [Integer] the size of the iv that should be returned in bytes
+    # @raise [EvpBytesToKey::ArgumentError]
+    # @return [Integer]
+    def validate_iv_length(iv_length)
+      unless iv_length.is_a?(Integer) && iv_length >= 0 && (iv_length % 2).zero?
+        raise EvpBytesToKey::ArgumentError, 'iv_length must be an even Integer >= 0'
       end
+
+      iv_length
     end
 
     # Generate a key from the supplied arguments by iteratively hashing the values and adding them
     # to bytes until bytes has been fully populated
     #
-    # @return [String] the hexadecimal string representation of the generated key
+    # @return [void]
     def generate_key!
       key_length = @bits / 8
       last_hash = ''
@@ -68,15 +88,25 @@ module EvpBytesToKey
       # and the iv
       loop do
         last_hash = Digest::MD5.digest(last_hash + @password + @salt.to_s)
-        bytes = bytes + last_hash
+        bytes += last_hash
 
-        break if bytes.bytesize >= (key_length) + @iv_length.to_i
+        break if bytes.bytesize >= key_length + @iv_length.to_i
       end
 
+      set_key_and_iv(bytes, key_length)
+    end
+
+    # @param bytes [String] the byte string from which the key and iv are extracted
+    # @param key_length [Integer] the length of the key in bytes
+    # @return [void]
+    def set_key_and_iv(bytes, key_length)
       self.key = bytes.byteslice(0..key_length - 1)
-      self.iv = bytes.byteslice(key_length..key_length + @iv_length - 1)
-      self.key_hex = self.key.unpack('H*').first
-      self.iv_hex = self.iv.unpack('H*').first
+      self.key_hex = key.unpack1('H*')
+
+      if bytes.bytesize > key_length
+        self.iv = bytes.byteslice(key_length..key_length + @iv_length - 1)
+        self.iv_hex = iv.unpack1('H*')
+      end
     end
   end
 end

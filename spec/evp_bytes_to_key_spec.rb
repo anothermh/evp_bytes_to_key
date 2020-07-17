@@ -1,5 +1,6 @@
 # frozen_string_literal: true
 
+# rubocop:disable Metrics/BlockLength
 RSpec.describe EvpBytesToKey do
   describe EvpBytesToKey::Key do
     it 'validates the password argument' do
@@ -34,7 +35,7 @@ RSpec.describe EvpBytesToKey do
       it 'generates a valid byte string key value' do
         expect(key.key).to be_kind_of(String)
         expect(key.key.bytesize).to eq(key_length / 8)
-        expect(key.key.unpack('H*').first).to eq(valid_key)
+        expect(key.key.unpack1('H*')).to eq(valid_key)
       end
 
       it 'generates a valid hexadecimal key value' do
@@ -46,7 +47,7 @@ RSpec.describe EvpBytesToKey do
       it 'generates a valid byte string iv value' do
         expect(key.iv).to be_kind_of(String)
         expect(key.iv.bytesize).to eq(iv_length)
-        expect(key.iv.unpack('H*').first).to eq(valid_iv)
+        expect(key.iv.unpack1('H*')).to eq(valid_iv)
       end
 
       it 'generates a valid hexadecimal iv value' do
@@ -61,3 +62,4 @@ RSpec.describe EvpBytesToKey do
     expect(EvpBytesToKey::VERSION).not_to be nil
   end
 end
+# rubocop:enable Metrics/BlockLength
