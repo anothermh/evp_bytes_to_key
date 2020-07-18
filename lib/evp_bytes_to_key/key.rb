@@ -101,12 +101,16 @@ module EvpBytesToKey
     # @return [void]
     def set_key_and_iv(bytes, key_length)
       self.key = bytes.byteslice(0..key_length - 1)
-      self.key_hex = key.unpack1('H*')
+      # rubocop:disable Style/UnpackFirst
+      self.key_hex = key.unpack('H*').first
+      # rubocop:enable Style/UnpackFirst
 
-      if bytes.bytesize > key_length
-        self.iv = bytes.byteslice(key_length..key_length + @iv_length - 1)
-        self.iv_hex = iv.unpack1('H*')
-      end
+      return unless bytes.bytesize > key_length
+
+      self.iv = bytes.byteslice(key_length..key_length + @iv_length - 1)
+      # rubocop:disable Style/UnpackFirst
+      self.iv_hex = iv.unpack('H*').first
+      # rubocop:enable Style/UnpackFirst
     end
   end
 end

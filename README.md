@@ -41,6 +41,10 @@ Or install it yourself as:
 
     $ gem install evp_bytes_to_key
 
+## Requirements
+
+This gem requires Ruby 2.0.0 due to the format of its `gemspec` file but the `EvpBytesToKey` module has been tested to work in Ruby as low as 1.9.3.
+
 ## Usage
 
 Require the gem first:
