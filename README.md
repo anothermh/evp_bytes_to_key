@@ -151,7 +151,7 @@ This returns:
 
 Encrypt with Ruby:
 
-```
+```ruby
 require 'openssl'
 require 'base64'
 require 'evp_bytes_to_key'
@@ -214,7 +214,7 @@ This returns:
 
 Encrypt with Ruby:
 
-```
+```ruby
 require 'openssl'
 require 'base64'
 require 'evp_bytes_to_key'
